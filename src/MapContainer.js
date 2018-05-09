@@ -2,10 +2,33 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom'
 
 export default class MapContainer extends Component {
+  constructor() {
+    super();
+    this.state = {
+      isLoaded: false,
+      stationList: []
+    }
+  }
 
-  componentDidUpdate() {
+  componentDidMount() {
+    this.fetchAPIdata();
     this.loadMap(); // call loadMap function to load the google map
   }
+
+  fetchAPIdata() {
+    fetch('https://api.jcdecaux.com/vls/v1/stations?apiKey=3285a16c411343447c02ece4a54228f4d7c9a4ff&contract=Seville')
+    .then(response => response.json())
+    .then(data => {
+      console.log(data)
+      this.setState({ // add data from the API in the empty stationList array initialized empty in the state
+        isLoaded: true,
+        stationList: data
+      })
+      console.log('hello', this.state.stationList)
+    })
+    .catch(error => console.log('Request failed', error));
+  }
+
 
   loadMap() {
     if (this.props && this.props.google) { // checks to make sure that props have been passed
@@ -16,8 +39,8 @@ export default class MapContainer extends Component {
       const node = ReactDOM.findDOMNode(mapRef); // finds the 'map' div in the React DOM, names it node
 
       const mapConfig = Object.assign({}, {
-        center: {lat: 40.7485722, lng: -74.0068633}, // sets center of google map to NYC.
-        zoom: 11, // sets zoom. Lower numbers are zoomed further out.
+        center: {lat: 37.392529, lng: -5.994072}, // sets center of google map to Seville.
+        zoom: 14, // sets zoom. Lower numbers are zoomed further out.
         mapTypeId: 'roadmap' // optional main map layer. Terrain, satellite, hybrid or roadmap--if unspecified, defaults to roadmap.
       })
 
@@ -29,8 +52,18 @@ export default class MapContainer extends Component {
   render() {
     const style = { // MUST specify dimensions of the Google map or it will not work. Also works best when style is specified inside the render function and created as an object
       width: '90vw', // 90vw basically means take up 90% of the width screen. px also works.
-      height: '75vh' // 75vh similarly will take up roughly 75% of the height of the screen. px also works.
+      height: '90vh' // 75vh similarly will take up roughly 75% of the height of the screen. px also works.
     }
+
+    const {google} = this.props; // sets props equal to google
+
+    this.state.stationList.map( stations => { // iterate through locations saved in state
+      const marker = new google.maps.Marker({ // creates a new Google maps Marker object
+        position: {lat: stations.position.lat, lng: stations.position.lng}, // sets position of marker to specified location
+        map: this.map, // sets markers to appear on the map we just created on line 35
+        title: stations.name // the title of the marker is set to the name of the location
+      });
+    })
 
     return ( // in our return function you must return a div with ref='map' and style.
       <div ref="map" style={style}>
