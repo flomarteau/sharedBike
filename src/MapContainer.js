@@ -63,6 +63,28 @@ export default class MapContainer extends Component {
         map: this.map, // sets markers to appear on the map we just created on line 35
         title: stations.name // the title of the marker is set to the name of the location
       });
+
+      var name = stations.name;
+      var availableStands = stations.available_bike_stands;
+      var availableBikes = stations.available_bikes;
+      var totalStands = stations.bike_stands;
+
+      var contentString = '<div id="content">'+
+        '<h1 id="firstHeading" class="firstHeading">'+name+'</h1>'+
+        '<div id="bodyContent">'+
+        '<p><b>Bike stands available</b> : '+availableStands+'</p>'+
+        '<p><b>Bikes available</b> : '+availableBikes+'</p>'+
+        '<p><b>Bike stands in total</b> : '+totalStands+'</p>'+
+        '</div>'+
+        '</div>';
+
+      var infowindow = new google.maps.InfoWindow({
+        content: contentString
+      });
+
+      marker.addListener('click', function() {
+        infowindow.open(this.map, marker);
+      });
     })
 
     return ( // in our return function you must return a div with ref='map' and style.
